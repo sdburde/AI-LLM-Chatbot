@@ -1,0 +1,17 @@
+ipykernel
+langchain
+python-dotenv
+langchain_openai
+langchain_core
+langchain_community
+langchain_text_splitters
+bs4
+faiss-cpu
+pypdf
+arxiv
+langchain_huggingface
+langchain_groq
+wikipedia
+fastapi
+pydantic
+uvicorn

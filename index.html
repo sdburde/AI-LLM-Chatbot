@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> <!-- Markdown support -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f2f2f2;
+        }
+
+        .chat-container {
+            border-radius: 10px;
+            background-color: white;
+            padding: 20px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+
+        #chat-box {
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            background: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 10px;
+            max-width: 70%;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .user-message {
+            background-color: #007BFF;
+            color: white;
+            align-self: flex-end;
+        }
+
+        .ai-message {
+            background-color: #ddd;
+            align-self: flex-start;
+        }
+
+        .input-area {
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #ccc;
+            padding: 10px;
+            background: white;
+        }
+
+        #message {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="chat-container">
+        <h1>Chat with AI</h1>
+        <div id="chat-box"></div>
+
+        <div class="input-area">
+            <input type="text" id="message" placeholder="Type your message here">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            var message = document.getElementById("message").value.trim();
+            if (!message) return;
+
+            // Add user's message to chat
+            appendMessage(message, "user-message");
+
+            // Clear input field
+            document.getElementById("message").value = "";
+
+            var response = await fetch('http://localhost:6677/stream_chat/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: message })
+            });
+
+            var reader = response.body.getReader();
+            var decoder = new TextDecoder('utf-8');
+            var aiMessageDiv = appendMessage("", "ai-message");
+
+            function autoScroll() {
+                document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+            }
+
+            reader.read().then(function processResult({ done, value }) {
+                if (done) return;
+
+                let chunk = decoder.decode(value, { stream: true });
+                aiMessageDiv.innerHTML += chunk; // Append new tokens
+
+                // Render markdown properly
+                aiMessageDiv.innerHTML = marked.parse(aiMessageDiv.innerHTML);
+                autoScroll();
+
+                return reader.read().then(processResult);
+            });
+        }
+
+        function appendMessage(text, className) {
+            let chatBox = document.getElementById("chat-box");
+            let messageDiv = document.createElement("div");
+            messageDiv.classList.add("message", className);
+            messageDiv.innerHTML = marked.parse(text);
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll
+            return messageDiv;
+        }
+    </script>
+
+</body>
+
+</html>
