@@ -7,4 +7,4 @@ A responsive web-based chat application that interacts with an AI model to gener
 
 
 
-![Demo](https://raw.githubusercontent.com/sdburde/AI-LLM-Chatbot/main/image/demo1.gif)
+<!-- ![Demo](https://raw.githubusercontent.com/sdburde/AI-LLM-Chatbot/main/image/demo1.gif) -->
